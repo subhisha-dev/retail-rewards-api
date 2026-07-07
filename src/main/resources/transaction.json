@@ -1,0 +1,63 @@
+[
+  {
+    "transactionId" : "T1",
+    "customerId" : 1,
+    "transAmount" : 120.87,
+    "transDate": "2026-04-10"
+  },
+  {
+    "transactionId" : "T2",
+    "customerId" : 1,
+    "transAmount" : 90.0,
+    "transDate": "2026-04-15"
+  },
+  {
+    "transactionId" : "T3",
+    "customerId" : 1,
+    "transAmount" : 75.0,
+    "transDate": "2026-05-20"
+  },
+  {
+    "transactionId" : "T4",
+    "customerId" : 1,
+    "transAmount" : 200.0,
+    "transDate": "2026-06-10"
+  },
+  {
+    "transactionId" : "T5",
+    "customerId" : 2,
+    "transAmount" : 50.16,
+    "transDate": "2026-05-05"
+  },
+  {
+    "transactionId" : "T6",
+    "customerId" : 2,
+    "transAmount" : 200.0,
+    "transDate": "2026-06-25"
+  },
+  {
+    "transactionId" : "T7",
+    "customerId" : 3,
+    "transAmount" : 150.0,
+    "transDate": "2026-05-18"
+  },
+  {
+    "transactionId" : "T8",
+    "customerId" : 3,
+    "transAmount" : 900.0,
+    "transDate": "2026-06-26"
+  },
+  {
+    "transactionId" : "T9",
+    "customerId" : 4,
+    "transAmount" : 300.0,
+    "transDate": "2026-05-27"
+  },
+  {
+    "transactionId" : "T10",
+    "customerId" : 4,
+    "transAmount" : 1000.0,
+    "transDate": "2026-06-12"
+  }
+
+]

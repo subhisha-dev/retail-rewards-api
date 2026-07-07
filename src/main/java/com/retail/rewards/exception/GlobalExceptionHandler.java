@@ -14,19 +14,32 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(value = CustomerNotFoundException.class)
     public ResponseEntity<Map<String, Object>> handleCustomerNotFound(Exception e) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("timestamp", LocalDate.now(),
-                "status", HttpStatus.NOT_FOUND.value(), "error", "Not Found", "message", e.getMessage()));
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
+                "timestamp", LocalDate.now(),
+                "status", HttpStatus.NOT_FOUND.value(),
+                "error", "Not Found",
+                "message", validateMessage(e)));
     }
 
     @ExceptionHandler(value = IllegalArgumentException.class)
     public ResponseEntity<Map<String, Object>> handleBadRequest(Exception e) {
-        return  ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("timestamp", LocalDate.now(),
-                "status", HttpStatus.BAD_REQUEST.value(), "error", "Bad Request", "message", e.getMessage()));
+        return  ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
+                "timestamp", LocalDate.now(),
+                "status", HttpStatus.BAD_REQUEST.value(),
+                "error", "Bad Request",
+                "message", validateMessage(e)));
     }
 
     @ExceptionHandler(value = ConstraintViolationException.class)
     public ResponseEntity<Map<String, Object>> handleConstraintViolation(Exception e) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("timestamp", LocalDate.now(),
-                "status", HttpStatus.BAD_REQUEST.value(), "error", "Invalid input: months must be 1-12", "message", e.getMessage()));
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
+                "timestamp", LocalDate.now(),
+                "status", HttpStatus.BAD_REQUEST.value(),
+                "error", "Invalid input: months must be 1-12",
+                "message", validateMessage(e)));
+    }
+
+    private String validateMessage(Exception e) {
+        return e == null || e.getMessage() == null ? "Unexpected error" : e.getMessage();
     }
 }

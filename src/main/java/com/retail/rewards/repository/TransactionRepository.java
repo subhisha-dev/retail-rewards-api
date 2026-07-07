@@ -16,12 +16,13 @@ import java.io.InputStream;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 @Repository
 @Slf4j
 public class TransactionRepository {
 
-    List<Transaction> transactions;
+    private List<Transaction> transactions = Collections.emptyList();
 
     @PostConstruct
     public void init() {
@@ -39,7 +40,11 @@ public class TransactionRepository {
         objectMapper.registerModule(new JavaTimeModule());
 
         try(InputStream is = TransactionRepository.class.getClassLoader().getResourceAsStream("transaction.json")) {
-        return objectMapper.readValue(is, new TypeReference<List<Transaction>>(){});
+            if(is == null) {
+                throw new IllegalStateException("Could not initialize transaction data: transaction.json not found");
+            }
+            List<Transaction> loadedTransactions = objectMapper.readValue(is, new TypeReference<List<Transaction>>() {});
+            return loadedTransactions == null ? Collections.emptyList() : loadedTransactions;
 
         } catch (IOException e) {
             log.error("Failed to load the transactions:{}", String.valueOf(e));
@@ -49,6 +54,14 @@ public class TransactionRepository {
 
     public List<Transaction> findByCustomerIdAndDateAfter(@NotBlank String customerId, LocalDate cutOffdate) {
         log.info("Executing findAllByCustomerIdAndDateAfter method for customerId: {} and dateAfter: {}", customerId, cutOffdate);
-        return transactions.stream().filter(t-> t.getCustomerId().equals(customerId)).filter(t-> !t.getTransDate().isBefore(cutOffdate)).toList();
+        if (cutOffdate == null) {
+            throw new IllegalArgumentException("Cutoff date can not be null");
+        }
+        return transactions.stream()
+                .filter(Objects::nonNull)
+                .filter(t-> Objects.equals(t.getCustomerId(),customerId))
+                .filter(t-> t.getTransDate() != null)
+                .filter(t-> !t.getTransDate().isBefore(cutOffdate))
+                .toList();
     }
 }

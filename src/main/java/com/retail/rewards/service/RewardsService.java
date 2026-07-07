@@ -5,6 +5,10 @@ import com.retail.rewards.exception.CustomerNotFoundException;
 import com.retail.rewards.model.Transaction;
 import com.retail.rewards.repository.TransactionRepository;
 import com.retail.rewards.util.RewardsCalculator;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -14,6 +18,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class RewardsService {
 
     private final TransactionRepository transactionRepository;
@@ -39,12 +44,13 @@ public class RewardsService {
     }
 
     public RewardsResponse getCustomerRewards(String customerId) {
+        log.info("getCustomerRewards - customerId: {} ", customerId);
         List<Transaction> transactions = getTransactionsForCustomer(customerId);
         return buildRewardsResponse(customerId, transactions);
     }
 
     private RewardsResponse buildRewardsResponse(String customerId, List<Transaction> transactions) {
-
+        log.info("buildRewardsResponse - customerId: {} ", customerId);
         Map<String, Double> monthlyPoints = transactions.stream().collect(Collectors.groupingBy(t-> YearMonth.from(t.getTransDate()).toString(), Collectors.summingDouble(t-> RewardsCalculator.calculateRewardPoints(t.getTransAmount()))));
 
         double totalPoints = monthlyPoints.values().stream().mapToDouble(Double:: doubleValue).sum();
@@ -52,6 +58,7 @@ public class RewardsService {
     }
 
     public RewardsResponse getCustomerRewardsForDate(String customerId, LocalDate date) {
+        log.info("getCustomerRewardsForDate - customerId: {} ", customerId);
         YearMonth targetMonth = YearMonth.from(date);
 
         List<Transaction> transactions = getTransactionsForCustomer(customerId);
@@ -60,5 +67,27 @@ public class RewardsService {
         }
         return buildRewardsResponse(customerId, transactions.stream().filter(t-> YearMonth.from(t.getTransDate()).equals(targetMonth)).toList());
 
+    }
+
+    public RewardsResponse getCustomerRewardsForMonths(@NotBlank String customerId, @Min(1) @Max(12) int months) {
+        log.info("Executing getCustomerRewardsForMonths - Calculating rewards for customer:{} for last {} months", customerId, months);
+        LocalDate cutOffDate = LocalDate.now().minusMonths(months);
+        log.info("cutOffDate {}", cutOffDate);
+        List<Transaction> transactions = transactionRepository.findByCustomerIdAndDateAfter(customerId, cutOffDate);
+        if(transactions.isEmpty()) {
+            throw new CustomerNotFoundException("No transactions found for CustomerID:" + customerId + " for last month:" + months);
+        }
+        return buildRewardsResponseForMonths(customerId, months, transactions);
+
+    }
+
+    private RewardsResponse buildRewardsResponseForMonths(String customerId, int months, List<Transaction> transactions) {
+        log.info("Executing buildRewardsResponseForMonths method for customer :{} for last {} months", customerId, months);
+        Map<String, Double> monthlyPoints = transactions.stream().collect(Collectors.groupingBy(t-> YearMonth.from(t.getTransDate()).toString(), Collectors.summingDouble(t-> RewardsCalculator.calculateRewardPoints(t.getTransAmount()))));
+
+        String customerName = transactions.getFirst().getCustomerName();
+        int transactionCount = transactions.size();
+        double totalPoints = monthlyPoints.values().stream().mapToDouble(Double:: doubleValue).sum();
+        return new RewardsResponse(customerId, customerName, months, transactionCount, monthlyPoints, totalPoints);
     }
 }

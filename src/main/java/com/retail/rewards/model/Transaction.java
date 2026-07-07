@@ -15,6 +15,7 @@ public class Transaction {
     private String transactionId;
     private String customerId;
     private Double transAmount;
+    private String customerName;
 
     @JsonFormat(pattern = "")
     private LocalDate transDate;

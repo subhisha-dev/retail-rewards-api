@@ -1,12 +1,10 @@
 package com.retail.rewards.util;
 
-import com.retail.rewards.dto.RewardsResponse;
-import com.retail.rewards.model.Transaction;
+import com.retail.rewards.RewardsConstants;
 import lombok.extern.slf4j.Slf4j;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.List;
 
 @Slf4j
 public class RewardsCalculator {
@@ -17,15 +15,15 @@ public class RewardsCalculator {
             throw new IllegalArgumentException("Transaction amount can not be negative:" + amount);
         }
         double points = 0;
-        if(amount > 100) {
-            double amountOver100 =  amount - 100.0 ; //$120.87 - $100 = $20.87 * 2(rate) = $40.87
-            points += amountOver100 * 2.0; // one point for each dollar = $50 * 1(rate) = $50
+        if(amount > RewardsConstants.PREMIUM_TIER_AMOUNT) {
+            double premiumTierAmount =  amount - 100.0 ; //$120.87 - $100 = $20.87 * 2(rate) = $40.87
+            points += premiumTierAmount * RewardsConstants.RATE_PER_PREMIUM_DOLLAR; // one point for each dollar between 50 and 100 = $50 * 1(rate) = $50
             log.info("Amount of each transaction which > $100: {} and the calculated points for that amount: {}", amount, points );
         }
-        if(amount > 50) {
-            double amountBetween50And100 = Math.min(amount, 100) - 50.0;
-            points += amountBetween50And100;
-            log.info("Amount of each transaction which is > $50 and <=100: {} and the calzaculated points for that amount: {}",
+        if(amount > RewardsConstants.STANDARD_TIER_AMOUNT) {
+            double standardTierAmount = Math.min(amount, 100) - 50.0;
+            points += standardTierAmount * RewardsConstants.RATE_PER_STANDARD_DOLLAR;
+            log.info("Amount of each transaction which is > $50 and <=100: {} and the calculated points for that amount: {}",
                     amount, points );
         }
     return BigDecimal.valueOf(points).setScale(2, RoundingMode.HALF_UP).doubleValue();

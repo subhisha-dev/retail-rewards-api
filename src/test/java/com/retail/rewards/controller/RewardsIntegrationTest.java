@@ -10,9 +10,7 @@ import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -38,7 +36,7 @@ public class RewardsIntegrationTest {
     }
 
     @Test
-    public void getRewardsByCustomer_SuccessFlowReturs200() {
+    public void getRewardsByCustomer_SuccessFlowReturns200() {
         String customerId = "1";
 
         ResponseEntity<RewardsResponse> res = restTemplate.getForEntity("/api/rewards/"+ customerId, RewardsResponse.class);
@@ -63,21 +61,19 @@ public class RewardsIntegrationTest {
     public void getCustomerRewardsForDate_validDate_ReturnsOnlyThatMonthRewards()
         throws Exception {
         String customerId = "1";
-        String date = "2020-04-20";
+        String date = "2026-04-20";
 
-        Map<String, Double> rewardsMap = new HashMap<>();
-        rewardsMap.put("2026-04", 131.74);
-
-        //rewardsResponse = new RewardsResponse("1", rewardsMap, 406.74);
+        String url = "/api/rewards/byDate/"+ customerId + "?date=" + date;
+        System.out.println(url);
 
         ResponseEntity<RewardsResponse> res = restTemplate.
-                getForEntity("/api/rewards/"+ customerId + "/?date=" + date, RewardsResponse.class);
+                getForEntity(url, RewardsResponse.class);
 
         assertEquals(HttpStatus.OK,res.getStatusCode());
         assertNotNull(res.getBody());
         assertEquals(customerId, res.getBody().getCustomerId());
-        //assertEquals(1, res.getBody().getMonthlyRewardPoints().size());
-        //assertEquals(res.getBody().getTotalRewardPoints(), res.getBody().getMonthlyRewardPoints().values().stream().mapToDouble(Double::doubleValue).sum());
+        assertEquals(1, res.getBody().getMonthlyRewardPoints().size());
+        assertEquals(res.getBody().getTotalRewardPoints(), res.getBody().getMonthlyRewardPoints().values().stream().mapToDouble(Double::doubleValue).sum());
 
         }
 
@@ -87,9 +83,50 @@ public class RewardsIntegrationTest {
         String date = "2020-04-20";
 
             ResponseEntity<RewardsResponse> res = restTemplate.
-                    getForEntity("/api/rewards/"+ customerId + "/?date=" + date, RewardsResponse.class);
+                    getForEntity("/api/rewards/byDate/"+ customerId + "?date=" + date, RewardsResponse.class);
 
             assertEquals(HttpStatus.NOT_FOUND,res.getStatusCode());
         }
 
+    @Test
+    public void getCustomerRewardsForMonths_SuccessFlow_ReturnsPastMonthsRewards()
+            throws Exception {
+        String customerId = "1";
+        int months = 3;
+
+        String url = "/api/rewards/byMonths/"+ customerId + "?months=" + months;
+        System.out.println(url);
+
+        ResponseEntity<RewardsResponse> res = restTemplate.
+                getForEntity(url, RewardsResponse.class);
+
+        assertEquals(HttpStatus.OK,res.getStatusCode());
+        assertNotNull(res.getBody());
+        assertEquals(customerId, res.getBody().getCustomerId());
+        assertEquals(3, res.getBody().getMonthlyRewardPoints().size());
+        assertEquals(res.getBody().getTotalRewardPoints(), res.getBody().getMonthlyRewardPoints().values().stream().mapToDouble(Double::doubleValue).sum());
+
+    }
+
+    @Test
+    public void getCustomerRewardsForMonths_noData_Returns404() {
+        String customerId = "99";
+        int months = 3;
+
+        ResponseEntity<RewardsResponse> res = restTemplate.
+                getForEntity("/api/rewards/byMonths/"+ customerId + "?months=" + months, RewardsResponse.class);
+
+        assertEquals(HttpStatus.NOT_FOUND,res.getStatusCode());
+    }
+
+    @Test
+    public void getCustomerRewardsForMonths_InvalidInput_Returns400() {
+        String customerId = " ";
+        int months = 3;
+
+        ResponseEntity<RewardsResponse> res = restTemplate.
+                getForEntity("/api/rewards/byMonths/"+ customerId + "?months=" + months, RewardsResponse.class);
+
+        assertEquals(HttpStatus.BAD_REQUEST,res.getStatusCode());
+    }
 }

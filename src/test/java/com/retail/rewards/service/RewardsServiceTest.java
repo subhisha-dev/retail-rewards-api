@@ -4,6 +4,7 @@ import com.retail.rewards.dto.RewardsResponse;
 import com.retail.rewards.exception.CustomerNotFoundException;
 import com.retail.rewards.model.Transaction;
 import com.retail.rewards.repository.TransactionRepository;
+import jakarta.validation.ConstraintViolationException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -11,14 +12,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.ResponseEntity;
 
 import java.time.LocalDate;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -43,15 +41,10 @@ public class RewardsServiceTest {
         rewardsMap.put("2026-06", 250.0);
         rewardsResponse = new RewardsResponse("1",rewardsMap, 406.74);
 
-        /*transaction = new Transaction();
-        transaction.setTransactionId("T1");
-        transaction.setCustomerId("1");
-        transaction.setTransDate(LocalDate.of(2026,04,10));
-        transaction.setTransAmount(120.87);*/
-        transactionList = Arrays.asList(new Transaction("T1", "1", 120.87,LocalDate.of(2026,04,10 )),
-                new Transaction("T1", "1", 90.0,LocalDate.of(2026,04,15)),
-                new Transaction("T2", "1", 75.0, LocalDate.of(2026,05,20)),
-                new Transaction("T3", "1", 200.0, LocalDate.of(2026,06,10)));
+        transactionList = Arrays.asList(new Transaction("T1", "1", 120.87, "John",LocalDate.of(2026,04,10 )),
+                new Transaction("T2", "1", 90.0, "John", LocalDate.of(2026,04,15)),
+                new Transaction("T3", "1", 75.0, "John",  LocalDate.of(2026,05,20)),
+                new Transaction("T4", "1", 200.0, "John",  LocalDate.of(2026,06,10)));
     }
 
     @Test
@@ -152,17 +145,53 @@ public class RewardsServiceTest {
         verify(transactionRepository, times(1)).findAll();
     }
 
-    /*@Test
-    public void testGetCustomerRewardsForDate_Exception() throws CustomerNotFoundException {
+    @Test
+    public void testGetCustomerRewardsForMonths_HappyFlow() throws Exception {
 
-        when(transactionRepository.findAll()).thenReturn(new ArrayList<>());
+        String customerId = "1";
+        int months = 3;
+
+        when(transactionRepository.findByCustomerIdAndDateAfter(customerId, LocalDate.of(2026,04,07))).thenReturn(transactionList);
+
+        RewardsResponse res = rewardsService.getCustomerRewardsForMonths(customerId, months);
+
+        Assertions.assertNotNull(res);
+        assertEquals("1", res.getCustomerId());
+        assertEquals(3, res.getMonthlyRewardPoints().size());
+        assertEquals(131.74, res.getMonthlyRewardPoints().get("2026-04"));
+        assertEquals(res.getTotalRewardPoints(), res.getMonthlyRewardPoints().values().stream().mapToDouble(Double::doubleValue).sum());
+        verify(transactionRepository, times(1)).findByCustomerIdAndDateAfter(customerId, LocalDate.of(2026,04,07));
+    }
+
+    @Test
+    public void testGetCustomerRewardsForMonths_ExceptionFlow_NoTransactions_CustomerNotFoundException() throws Exception {
+
+        String customerId = "99";
+
+
+        when(transactionRepository.findByCustomerIdAndDateAfter(customerId, LocalDate.of(2026,04,07))).thenReturn(new ArrayList<>());
 
         CustomerNotFoundException exception = Assertions.assertThrows(CustomerNotFoundException.class, () -> {
-            rewardsService.getCustomerRewardsForDate("6", LocalDate.of(2026, 04,10));
+            rewardsService.getCustomerRewardsForMonths("99", 3);
         });
 
-        Assertions.assertEquals("No transactions found for CustomerID:6 for target month:2026-04", exception.getMessage());
-        verify(transactionRepository, times(1)).findAll();
-    }*/
+        Assertions.assertEquals("No transactions found for CustomerID:99 for last month:3", exception.getMessage());
+        verify(transactionRepository, times(1)).findByCustomerIdAndDateAfter(customerId, LocalDate.of(2026,04,07));
+    }
 
+    @Test
+    public void testGetCustomerRewardsForMonths_ExceptionFlow_InvalidInput_ConstraintViolationException() throws Exception {
+
+        String customerId = "null";
+        int months = 3;
+
+        when(transactionRepository.findByCustomerIdAndDateAfter(customerId, LocalDate.of(2026,04,07))).thenThrow(new CustomerNotFoundException("Customer ID:null"));
+
+        CustomerNotFoundException exception = Assertions.assertThrows(CustomerNotFoundException.class, () -> {
+            rewardsService.getCustomerRewardsForMonths("null", 3);
+        });
+
+        Assertions.assertEquals("Customer ID:null", exception.getMessage());
+        verify(transactionRepository, times(1)).findByCustomerIdAndDateAfter(customerId, LocalDate.of(2026,04,07));
+    }
 }

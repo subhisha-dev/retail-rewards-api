@@ -7,6 +7,7 @@ import com.retail.rewards.exception.CustomerNotFoundException;
 import com.retail.rewards.model.Transaction;
 import com.retail.rewards.repository.TransactionRepository;
 import com.retail.rewards.service.RewardsService;
+import jakarta.validation.ConstraintViolationException;
 import net.bytebuddy.asm.Advice;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,10 +19,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
 
 import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
@@ -162,4 +160,56 @@ public class RewardsControllerTest {
         Assertions.assertEquals("CustomerId not found", exception.getMessage());
         verify(rewardsService, times(1)).getCustomerRewards(anyString());
     }
+
+    @Test
+    public void testGetCustomerRewardsForMonths_HappyFlow() throws Exception {
+
+        String customerId = "1";
+        int months = 5;
+
+        rewardsResponse.getMonthlyRewardPoints().put("2026-02", 630.1);
+        rewardsResponse.setTotalRewardPoints(1036.8400000000001);
+
+        when(rewardsService.getCustomerRewardsForMonths(customerId, months)).thenReturn(rewardsResponse);
+
+        ResponseEntity<RewardsResponse> res = rewardsController.getCustomerRewardsForMonths(customerId, months);
+
+        assertEquals(200, res.getStatusCode().value());
+        Assertions.assertNotNull(res.getBody());
+        assertEquals("1", res.getBody().getCustomerId());
+        assertEquals(4, res.getBody().getMonthlyRewardPoints().size());
+        assertEquals(res.getBody().getTotalRewardPoints(), res.getBody().getMonthlyRewardPoints().values().stream().mapToDouble(Double::doubleValue).sum());
+        verify(rewardsService, times(1)).getCustomerRewardsForMonths("1", 5);
+    }
+
+    @Test
+    public void testGetCustomerRewardsForMonths_CustomerNotFoundExceptionFlow() throws Exception {
+
+        String customerId = "99";
+        int months = 5;
+        when(rewardsService.getCustomerRewardsForMonths(customerId, months)).thenThrow(new CustomerNotFoundException("CustomerId not found"));
+
+        CustomerNotFoundException exception = Assertions.assertThrows(CustomerNotFoundException.class, () -> {
+            rewardsController.getCustomerRewardsForMonths("99", 5);
+        });
+
+        Assertions.assertEquals("CustomerId not found", exception.getMessage());
+        verify(rewardsService, times(1)).getCustomerRewardsForMonths("99", 5);
+    }
+
+    @Test
+    public void testGetCustomerRewardsForMonths_ConstraintViolationExceptionFlow() throws Exception {
+
+        String customerId = " ";
+        int months = 5;
+        when(rewardsService.getCustomerRewardsForMonths(customerId, months)).thenThrow(new ConstraintViolationException("Invalid Input to the controller method", new HashSet<>()));
+
+        ConstraintViolationException exception = Assertions.assertThrows(ConstraintViolationException.class, () -> {
+            rewardsController.getCustomerRewardsForMonths(" ", 5);
+        });
+
+        Assertions.assertEquals("Invalid Input to the controller method", exception.getMessage());
+        verify(rewardsService, times(1)).getCustomerRewardsForMonths(" ", 5);
+    }
+
 }

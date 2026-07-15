@@ -8,7 +8,7 @@
 		<version>3.5.16</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>com.retail.rewards</groupId>
+	<groupId>com.charter.reward</groupId>
 	<artifactId>rewards-api</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<properties>
@@ -64,6 +64,16 @@
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
 				<version>0.8.12</version>
+				<configuration>
+					<excludes>
+						<exclude>
+							com/charter/reward/RewardsApiApplication.class
+						</exclude>
+						<exclude>
+							com/charter/reward/exception/GlobalExceptionHandler.class
+						</exclude>
+					</excludes>
+				</configuration>
 				<executions>
 					<execution>
 						<goals>

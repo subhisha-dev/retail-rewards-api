@@ -6,10 +6,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -17,13 +17,8 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class RewardsIntegrationTest {
 
-    @LocalServerPort
-    private int port;
-
     @Autowired
     private TestRestTemplate restTemplate;
-
-    private RewardsResponse rewardsResponse;
 
     @Test
     public void getAllRewards_ReturnsAllRewards()
@@ -72,7 +67,7 @@ public class RewardsIntegrationTest {
         assertNotNull(res.getBody());
         assertEquals(customerId, res.getBody().getCustomerId());
         assertFalse(res.getBody().getMonthlyRewardPoints().isEmpty());
-        assertEquals(0, res.getBody().getTotalRewardPoints().compareTo(res.getBody().getMonthlyRewardPoints().values().stream().reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add)));
+        assertEquals(BigDecimal.valueOf(406.74), res.getBody().getTotalRewardPoints());
     }
 
     @Test

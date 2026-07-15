@@ -1,6 +1,6 @@
 package com.charter.reward.util;
 
-import com.charter.reward.RewardsConstants;
+import com.charter.reward.constants.RewardsConstants;
 import lombok.extern.slf4j.Slf4j;
 
 import java.math.BigDecimal;

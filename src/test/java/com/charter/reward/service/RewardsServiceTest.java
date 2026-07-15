@@ -1,6 +1,7 @@
 package com.charter.reward.service;
 
 import com.charter.reward.exception.CustomerNotFoundException;
+import com.charter.reward.model.MonthlyReward;
 import com.charter.reward.model.RewardsResponse;
 import com.charter.reward.model.Transaction;
 import com.charter.reward.repository.TransactionRepository;
@@ -14,7 +15,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
@@ -30,21 +34,21 @@ public class RewardsServiceTest {
 
     private List<Transaction> transactionList;
 
-    private RewardsResponse rewardsResponse;
-
     @BeforeEach
     public void setup() {
 
-        Map<String, BigDecimal> rewardsMap = new HashMap<>();
-        rewardsMap.put("2026-04", BigDecimal.valueOf(131.74));
-        rewardsMap.put("2026-05", BigDecimal.valueOf(25.0));
-        rewardsMap.put("2026-06", BigDecimal.valueOf(250.0));
-        rewardsResponse = new RewardsResponse("1","John",3, 4, rewardsMap, java.math.BigDecimal.valueOf(406.74), null, null);
-
-        transactionList = Arrays.asList(new Transaction("T1", "1", BigDecimal.valueOf(120.87), "John",LocalDate.of(2026,04,10 )),
+        transactionList = Arrays.asList(
+                new Transaction("T1", "1", BigDecimal.valueOf(120.87), "John",LocalDate.of(2026,04,10 )),
                 new Transaction("T2", "1", BigDecimal.valueOf(90.0), "John", LocalDate.of(2026,04,15)),
                 new Transaction("T3", "1", BigDecimal.valueOf(75.0), "John",  LocalDate.of(2026,05,20)),
                 new Transaction("T4", "1", BigDecimal.valueOf(200.0), "John",  LocalDate.of(2026,06,10)));
+    }
+
+    private BigDecimal getMonthlyPoints(RewardsResponse res, int year, String month) {
+        return res.getMonthlyRewardPoints().stream()
+                .filter(m -> m.getYear() == year && m.getMonth().equals(month))
+                .map(MonthlyReward::getRewardPoints)
+                .findFirst().orElse(BigDecimal.ZERO);
     }
 
     @Test
@@ -57,7 +61,8 @@ public class RewardsServiceTest {
         // then
         Assertions.assertNotNull(rewardsResponses);
         assertEquals("1", rewardsResponses.getFirst().getCustomerId());
-        assertEquals(BigDecimal.valueOf(131.74), rewardsResponses.getFirst().getMonthlyRewardPoints().get("2026-04"));
+        assertEquals(4, rewardsResponses.getFirst().getTransactions().size()); // 5. NEW
+        assertEquals(BigDecimal.valueOf(131.74), getMonthlyPoints(rewardsResponses.getFirst(), 2026, "APRIL")); // 6. UPDATED
         assertEquals(BigDecimal.valueOf(406.74), rewardsResponses.getFirst().getTotalRewardPoints());
         verify(transactionRepository, times(1)).findAll();
     }
@@ -121,6 +126,7 @@ public class RewardsServiceTest {
         assertEquals(1, rewardsResponses.size());
         assertEquals("1", rewardsResponses.getFirst().getCustomerId());
         assertEquals(1, rewardsResponses.getFirst().getTotalTransactions());
+        assertEquals(1, rewardsResponses.getFirst().getTransactions().size()); // 5. NEW
         verify(transactionRepository, times(1)).findAll();
     }
 
@@ -187,6 +193,7 @@ public class RewardsServiceTest {
         assertEquals("John", res.getCustomerName());
         assertEquals(4, res.getTotalTransactions());
         assertEquals(3, res.getMonthlyRewardPoints().size());
+        assertEquals(4, res.getTransactions().size());
         Assertions.assertNull(res.getStartDate());
         Assertions.assertNull(res.getEndDate());
     }
@@ -205,8 +212,8 @@ public class RewardsServiceTest {
         Assertions.assertNotNull(res);
         assertEquals("1", res.getCustomerId());
         assertEquals(3, res.getMonthlyRewardPoints().size());
-        assertEquals(BigDecimal.valueOf(131.74), res.getMonthlyRewardPoints().get("2026-04"));
-        assertEquals(0, res.getTotalRewardPoints().compareTo(res.getMonthlyRewardPoints().values().stream().reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add)));
+        assertEquals(BigDecimal.valueOf(131.74), getMonthlyPoints(res, 2026, "APRIL"));
+        assertEquals(406.74, res.getTotalRewardPoints().doubleValue());
         verify(transactionRepository, times(1)).findByCustomerIdAndDateBetween(customerId, startDate, endDate);
     }
 
@@ -228,6 +235,7 @@ public class RewardsServiceTest {
         assertEquals(startDate, res.getStartDate());
         assertEquals(endDate, res.getEndDate());
         assertEquals(3, res.getPeriodInMonths());
+        assertEquals(4, res.getTransactions().size()); // 5. NEW
         verify(transactionRepository, times(1)).findByCustomerIdAndDateBetween(customerId, startDate, endDate);
     }
 

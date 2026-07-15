@@ -6,8 +6,8 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -17,7 +17,8 @@ public class RewardsResponse {
     private String customerName;
     private int periodInMonths;
     private int totalTransactions;
-    private Map<String, BigDecimal> monthlyRewardPoints = new HashMap<>();
+    private List<TransactionDetail> transactions = new ArrayList<>();
+    private List<MonthlyReward> monthlyRewardPoints = new ArrayList<>();
     private BigDecimal totalRewardPoints = BigDecimal.ZERO;
     private LocalDate startDate;
     private LocalDate endDate;

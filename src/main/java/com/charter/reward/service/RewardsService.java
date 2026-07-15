@@ -1,8 +1,10 @@
 package com.charter.reward.service;
 
 import com.charter.reward.exception.CustomerNotFoundException;
+import com.charter.reward.model.MonthlyReward;
 import com.charter.reward.model.RewardsResponse;
 import com.charter.reward.model.Transaction;
+import com.charter.reward.model.TransactionDetail;
 import com.charter.reward.repository.TransactionRepository;
 import com.charter.reward.util.RewardsCalculator;
 import jakarta.validation.constraints.NotBlank;
@@ -13,10 +15,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.temporal.ChronoUnit;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -103,38 +102,57 @@ public class RewardsService {
         }
         int totalTransactions = validTransactions.size();
 
-        // Calculate monthly reward points using BigDecimal
-        Map<String, BigDecimal> monthlyPoints = validTransactions.stream()
-                .collect(Collectors.groupingBy(
-                        t -> YearMonth.from(t.getTransactionDate()).toString(),
-                        Collectors.reducing(BigDecimal.ZERO,
-                                t -> RewardsCalculator.calculateRewardPoints(t.getTransactionAmount()),
-                                BigDecimal::add)));
+        //calculate reward points for each transaction
+        List<TransactionDetail> transactionDetails = validTransactions.stream()
+                .map(tx -> {
+                    BigDecimal points = RewardsCalculator.calculateRewardPoints(tx.getTransactionAmount());
+                    return new TransactionDetail(
+                            tx.getTransactionId(),
+                            tx.getTransactionDate(),
+                            tx.getTransactionAmount(),
+                            points,
+                            tx.getTransactionDate().getYear(),
+                            tx.getTransactionDate().getMonth().toString()
+                    );
+                })
+                .toList();
 
-        BigDecimal totalPoints = monthlyPoints.values().stream().reduce(BigDecimal.ZERO, BigDecimal::add);
+        // Group transactions by year and month for monthly reward calculation
+        Map<String, List<TransactionDetail>> groupedByMonth = transactionDetails.stream()
+                .collect(Collectors.groupingBy(td -> td.getYear() + "-" + td.getMonth()));
 
-        // Calculate periodInMonths - if dates provided, use the period; otherwise, use unique month count
+        List<MonthlyReward> monthlyRewards = groupedByMonth.values().stream()
+                .map(list -> {
+                    TransactionDetail first = list.getFirst();
+                    BigDecimal monthTotal = list.stream()
+                            .map(TransactionDetail::getRewardPoints)
+                            .reduce(BigDecimal.ZERO, BigDecimal::add);
+                    return new MonthlyReward(first.getYear(), first.getMonth(), monthTotal);
+                })
+                .sorted(Comparator.comparing(MonthlyReward::getYear)
+                        .thenComparing(MonthlyReward::getMonth))
+                .toList();
+
+        BigDecimal totalPoints = transactionDetails.stream()
+                .map(TransactionDetail::getRewardPoints)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        // Calculate periodInMonths
         int periodInMonths;
         if (startDate != null && endDate != null) {
             long monthsBetween = ChronoUnit.MONTHS.between(YearMonth.from(startDate), YearMonth.from(endDate)) + 1;
-            try {
-                periodInMonths = Math.toIntExact(Math.max(1, monthsBetween));
-            } catch (ArithmeticException e) {
-                log.warn("Date range too large, assigning period to maximum integer value");
-                periodInMonths = Integer.MAX_VALUE;
-            }
+            periodInMonths = (int) Math.max(1, monthsBetween);
         } else {
-            // Default to the count of unique months in transactions
-            periodInMonths = !monthlyPoints.isEmpty() ? monthlyPoints.size() : 1;
+            periodInMonths = !monthlyRewards.isEmpty() ? monthlyRewards.size() : 1;
         }
 
-        // Build response with all customer details
         RewardsResponse response = new RewardsResponse();
         response.setCustomerId(customerId);
         response.setCustomerName(customerName);
         response.setPeriodInMonths(periodInMonths);
         response.setTotalTransactions(totalTransactions);
-        response.setMonthlyRewardPoints(monthlyPoints);
+        response.setTransactions(transactionDetails);
+        response.setMonthlyRewardPoints(monthlyRewards);
         response.setTotalRewardPoints(totalPoints);
         response.setStartDate(startDate);
         response.setEndDate(endDate);

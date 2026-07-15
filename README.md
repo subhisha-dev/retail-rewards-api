@@ -26,7 +26,7 @@ mvn clean package
 mvn spring-boot:run
 ```
 
-3. App runs on http://localhost:8090 (see `src/main/resources/application.properties`)
+3. App runs on http://localhost:8095 (see `src/main/resources/application.properties`)
 
 To run with MySQL (requires a running MySQL server and correct credentials in `application-mysql.properties`):
 
@@ -94,7 +94,7 @@ Base path: `/api/rewards`
 Example request
 
 ```http
-GET http://localhost:8090/api/rewards/allRewards
+GET http://localhost:8095/api/rewards/allRewards
 ```
 
 Successful response (200)
@@ -104,14 +104,190 @@ Successful response (200)
   {
     "customerId": "1",
     "customerName": "John",
-    "periodInMonths": 3,
-    "totalTransactions": 4,
-    "monthlyRewardPoints": {
-      "2026-04": 131.74,
-      "2026-05": 25.00,
-      "2026-06": 250.00
-    },
-    "totalRewardPoints": 406.74,
+    "periodInMonths": 4,
+    "totalTransactions": 5,
+    "transactions": [
+      {
+        "transactionId": "T1",
+        "transactionDate": "2026-04-10",
+        "transactionAmount": 120.87,
+        "rewardPoints": 91.74,
+        "year": 2026,
+        "month": "APRIL"
+      },
+      {
+        "transactionId": "T2",
+        "transactionDate": "2026-04-15",
+        "transactionAmount": 90.00,
+        "rewardPoints": 40.00,
+        "year": 2026,
+        "month": "APRIL"
+      },
+      {
+        "transactionId": "T3",
+        "transactionDate": "2026-05-20",
+        "transactionAmount": 75.00,
+        "rewardPoints": 25.00,
+        "year": 2026,
+        "month": "MAY"
+      },
+      {
+        "transactionId": "T4",
+        "transactionDate": "2026-06-10",
+        "transactionAmount": 200.00,
+        "rewardPoints": 250.00,
+        "year": 2026,
+        "month": "JUNE"
+      },
+      {
+        "transactionId": "T5",
+        "transactionDate": "2026-02-10",
+        "transactionAmount": 390.05,
+        "rewardPoints": 630.10,
+        "year": 2026,
+        "month": "FEBRUARY"
+      }
+    ],
+    "monthlyRewardPoints": [
+      {
+        "year": 2026,
+        "month": "APRIL",
+        "rewardPoints": 131.74
+      },
+      {
+        "year": 2026,
+        "month": "FEBRUARY",
+        "rewardPoints": 630.10
+      },
+      {
+        "year": 2026,
+        "month": "JUNE",
+        "rewardPoints": 250.00
+      },
+      {
+        "year": 2026,
+        "month": "MAY",
+        "rewardPoints": 25.00
+      }
+    ],
+    "totalRewardPoints": 1036.84,
+    "startDate": null,
+    "endDate": null
+  },
+  {
+    "customerId": "2",
+    "customerName": "Alex",
+    "periodInMonths": 2,
+    "totalTransactions": 2,
+    "transactions": [
+      {
+        "transactionId": "T6",
+        "transactionDate": "2026-05-05",
+        "transactionAmount": 50.16,
+        "rewardPoints": 0.16,
+        "year": 2026,
+        "month": "MAY"
+      },
+      {
+        "transactionId": "T7",
+        "transactionDate": "2026-06-25",
+        "transactionAmount": 200.00,
+        "rewardPoints": 250.00,
+        "year": 2026,
+        "month": "JUNE"
+      }
+    ],
+    "monthlyRewardPoints": [
+      {
+        "year": 2026,
+        "month": "JUNE",
+        "rewardPoints": 250.00
+      },
+      {
+        "year": 2026,
+        "month": "MAY",
+        "rewardPoints": 0.16
+      }
+    ],
+    "totalRewardPoints": 250.16,
+    "startDate": null,
+    "endDate": null
+  },
+  {
+    "customerId": "3",
+    "customerName": "Alice",
+    "periodInMonths": 2,
+    "totalTransactions": 2,
+    "transactions": [
+      {
+        "transactionId": "T8",
+        "transactionDate": "2026-05-18",
+        "transactionAmount": 150.00,
+        "rewardPoints": 150.00,
+        "year": 2026,
+        "month": "MAY"
+      },
+      {
+        "transactionId": "T9",
+        "transactionDate": "2026-06-26",
+        "transactionAmount": 900.00,
+        "rewardPoints": 1650.00,
+        "year": 2026,
+        "month": "JUNE"
+      }
+    ],
+    "monthlyRewardPoints": [
+      {
+        "year": 2026,
+        "month": "JUNE",
+        "rewardPoints": 1650.00
+      },
+      {
+        "year": 2026,
+        "month": "MAY",
+        "rewardPoints": 150.00
+      }
+    ],
+    "totalRewardPoints": 1800.00,
+    "startDate": null,
+    "endDate": null
+  },
+  {
+    "customerId": "4",
+    "customerName": "Peter",
+    "periodInMonths": 2,
+    "totalTransactions": 2,
+    "transactions": [
+      {
+        "transactionId": "T10",
+        "transactionDate": "2026-05-27",
+        "transactionAmount": 300.00,
+        "rewardPoints": 450.00,
+        "year": 2026,
+        "month": "MAY"
+      },
+      {
+        "transactionId": "T11",
+        "transactionDate": "2026-06-12",
+        "transactionAmount": 1000.00,
+        "rewardPoints": 1850.00,
+        "year": 2026,
+        "month": "JUNE"
+      }
+    ],
+    "monthlyRewardPoints": [
+      {
+        "year": 2026,
+        "month": "JUNE",
+        "rewardPoints": 1850.00
+      },
+      {
+        "year": 2026,
+        "month": "MAY",
+        "rewardPoints": 450.00
+      }
+    ],
+    "totalRewardPoints": 2300.00,
     "startDate": null,
     "endDate": null
   }
@@ -127,7 +303,7 @@ Successful response (200)
 Example request
 
 ```http
-GET http://localhost:8090/api/rewards/1
+GET http://localhost:8095/api/rewards/1
 ```
 
 Successful response (200)
@@ -136,14 +312,73 @@ Successful response (200)
 {
   "customerId": "1",
   "customerName": "John",
-  "periodInMonths": 3,
-  "totalTransactions": 4,
-  "monthlyRewardPoints": {
-    "2026-04": 131.74,
-    "2026-05": 25.00,
-    "2026-06": 250.00
-  },
-  "totalRewardPoints": 406.74,
+  "periodInMonths": 4,
+  "totalTransactions": 5,
+  "transactions": [
+    {
+      "transactionId": "T1",
+      "transactionDate": "2026-04-10",
+      "transactionAmount": 120.87,
+      "rewardPoints": 91.74,
+      "year": 2026,
+      "month": "APRIL"
+    },
+    {
+      "transactionId": "T2",
+      "transactionDate": "2026-04-15",
+      "transactionAmount": 90.00,
+      "rewardPoints": 40.00,
+      "year": 2026,
+      "month": "APRIL"
+    },
+    {
+      "transactionId": "T3",
+      "transactionDate": "2026-05-20",
+      "transactionAmount": 75.00,
+      "rewardPoints": 25.00,
+      "year": 2026,
+      "month": "MAY"
+    },
+    {
+      "transactionId": "T4",
+      "transactionDate": "2026-06-10",
+      "transactionAmount": 200.00,
+      "rewardPoints": 250.00,
+      "year": 2026,
+      "month": "JUNE"
+    },
+    {
+      "transactionId": "T5",
+      "transactionDate": "2026-02-10",
+      "transactionAmount": 390.05,
+      "rewardPoints": 630.10,
+      "year": 2026,
+      "month": "FEBRUARY"
+    }
+  ],
+  "monthlyRewardPoints": [
+    {
+      "year": 2026,
+      "month": "APRIL",
+      "rewardPoints": 131.74
+    },
+    {
+      "year": 2026,
+      "month": "FEBRUARY",
+      "rewardPoints": 630.10
+    },
+    {
+      "year": 2026,
+      "month": "JUNE",
+      "rewardPoints": 250.00
+    },
+    {
+      "year": 2026,
+      "month": "MAY",
+      "rewardPoints": 25.00
+    }
+  ],
+  "totalRewardPoints": 1036.84,
   "startDate": null,
   "endDate": null
 }
@@ -163,7 +398,7 @@ Errors
 Example request
 
 ```http
-GET http://localhost:8090/api/rewards/byPeriod/1?startDate=2026-04-09&endDate=2026-06-30
+GET http://localhost:8095/api/rewards/byPeriod/1?startDate=2026-04-09&endDate=2026-06-30
 ```
 
 Successful response (200)
@@ -174,13 +409,58 @@ Successful response (200)
   "customerName": "John",
   "periodInMonths": 3,
   "totalTransactions": 4,
-  "monthlyRewardPoints": {
-    "2026-02": 630.10,
-    "2026-04": 131.74,
-    "2026-05": 25.00,
-    "2026-06": 250.00
-  },
-  "totalRewardPoints": 1036.84,
+  "transactions": [
+    {
+      "transactionId": "T1",
+      "transactionDate": "2026-04-10",
+      "transactionAmount": 120.87,
+      "rewardPoints": 91.74,
+      "year": 2026,
+      "month": "APRIL"
+    },
+    {
+      "transactionId": "T2",
+      "transactionDate": "2026-04-15",
+      "transactionAmount": 90.00,
+      "rewardPoints": 40.00,
+      "year": 2026,
+      "month": "APRIL"
+    },
+    {
+      "transactionId": "T3",
+      "transactionDate": "2026-05-20",
+      "transactionAmount": 75.00,
+      "rewardPoints": 25.00,
+      "year": 2026,
+      "month": "MAY"
+    },
+    {
+      "transactionId": "T4",
+      "transactionDate": "2026-06-10",
+      "transactionAmount": 200.00,
+      "rewardPoints": 250.00,
+      "year": 2026,
+      "month": "JUNE"
+    }
+  ],
+  "monthlyRewardPoints": [
+    {
+      "year": 2026,
+      "month": "APRIL",
+      "rewardPoints": 131.74
+    },
+    {
+      "year": 2026,
+      "month": "JUNE",
+      "rewardPoints": 250.00
+    },
+    {
+      "year": 2026,
+      "month": "MAY",
+      "rewardPoints": 25.00
+    }
+  ],
+  "totalRewardPoints": 406.74,
   "startDate": "2026-04-09",
   "endDate": "2026-06-30"
 }
